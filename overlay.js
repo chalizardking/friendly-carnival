@@ -32904,7 +32904,23 @@
       const handleChromeMessage = (message) => {
         switch (message.type) {
           case "beginSelection":
-            setStatus("onSelection");
+            if (menuVisible) return;
+            let menuX = currentMousePosition.current.x;
+            let menuY = currentMousePosition.current.y;
+            if (menuX === 0 && menuY === 0) {
+              menuX = window.innerWidth / 2 - 100;
+              menuY = window.innerHeight / 2 - 60;
+            }
+            if (menuX + 200 > window.innerWidth) {
+              menuX = window.innerWidth - 200 - 10;
+            }
+            if (menuY + 120 > window.innerHeight) {
+              menuY = window.innerHeight - 120 - 10;
+            }
+            if (menuX < 0) menuX = 10;
+            if (menuY < 0) menuY = 10;
+            setMenuPosition({ x: menuX, y: menuY });
+            setMenuVisible(true);
             break;
           case "takeScreenshotResponse":
             handleScreenshotResponse(message);
