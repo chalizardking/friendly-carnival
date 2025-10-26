@@ -32864,6 +32864,16 @@
   function Root() {
     const [status, setStatus] = useAtom(overlayStateAtom);
     const [floatyAtoms, setFloatyAtoms] = useAtom(FloatyAtoms);
+    const [menuVisible, setMenuVisible] = (0, import_react33.useState)(false);
+    const [menuPosition, setMenuPosition] = (0, import_react33.useState)({ x: 0, y: 0 });
+    const currentMousePosition = (0, import_react33.useRef)({ x: 0, y: 0 });
+    (0, import_react33.useEffect)(() => {
+      const handleMouseMove = (e) => {
+        currentMousePosition.current = { x: e.clientX, y: e.clientY };
+      };
+      document.addEventListener("mousemove", handleMouseMove);
+      return () => document.removeEventListener("mousemove", handleMouseMove);
+    }, []);
     (0, import_react33.useEffect)(() => {
       const handleChromeMessage = (message) => {
         switch (message.type) {
