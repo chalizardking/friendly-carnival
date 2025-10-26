@@ -32874,6 +32874,32 @@
       document.addEventListener("mousemove", handleMouseMove);
       return () => document.removeEventListener("mousemove", handleMouseMove);
     }, []);
+    const captureFullViewport = () => {
+      const innerWidth = window.innerWidth;
+      const innerHeight = window.innerHeight;
+      const area = { xmin: 0, ymin: 0, xmax: innerWidth, ymax: innerHeight };
+      chrome.runtime.sendMessage({
+        type: "takeScreenshotRequest",
+        area
+      });
+      setMenuVisible(false);
+      setStatus("idle");
+    };
+    const captureFullPage = () => {
+      const fullWidth = Math.max(document.documentElement.scrollWidth, window.innerWidth);
+      const fullHeight = Math.max(document.documentElement.scrollHeight, window.innerHeight);
+      const area = { xmin: 0, ymin: 0, xmax: fullWidth, ymax: fullHeight };
+      chrome.runtime.sendMessage({
+        type: "takeScreenshotRequest",
+        area
+      });
+      setMenuVisible(false);
+      setStatus("idle");
+    };
+    const startManualSelection = () => {
+      setMenuVisible(false);
+      setStatus("onSelection");
+    };
     (0, import_react33.useEffect)(() => {
       const handleChromeMessage = (message) => {
         switch (message.type) {
