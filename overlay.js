@@ -32768,14 +32768,159 @@
 
   // src/components/root.tsx
   var import_jsx_runtime19 = __toESM(require_jsx_runtime(), 1);
+  function CaptureModeMenu({ position, onSelectViewport, onSelectFullPage, onSelectManual, onClose }) {
+    const menuContainerRef = (0, import_react33.useRef)(null);
+    (0, import_react33.useEffect)(() => {
+      const handleClickOutside = (event) => {
+        if (menuContainerRef.current && !menuContainerRef.current.contains(event.target)) {
+          onClose();
+        }
+      };
+      const handleEscapeKey = (event) => {
+        if (event.key === "Escape") {
+          event.stopPropagation();
+          onClose();
+        }
+      };
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleEscapeKey);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+        document.removeEventListener("keydown", handleEscapeKey);
+      };
+    }, [onClose]);
+    const menuStyle = {
+      position: "fixed",
+      left: `${position.x}px`,
+      top: `${position.y}px`,
+      width: "200px",
+      backgroundColor: "white",
+      border: "2px solid #999",
+      borderRadius: "4px",
+      padding: "8px",
+      boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
+      zIndex: "1000003",
+      display: "flex",
+      flexDirection: "column",
+      gap: "8px"
+    };
+    const buttonStyle = {
+      width: "100%",
+      height: "36px",
+      padding: "8px 12px",
+      border: "1px solid #ccc",
+      borderRadius: "4px",
+      backgroundColor: "white",
+      fontSize: "14px",
+      textAlign: "left",
+      cursor: "pointer",
+      display: "flex",
+      alignItems: "center",
+      gap: "8px"
+    };
+    const buttonHoverStyle = {
+      backgroundColor: "#f0f0f0"
+    };
+    return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+      "div",
+      {
+        ref: menuContainerRef,
+        style: menuStyle,
+        children: /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(import_jsx_runtime19.Fragment, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+            "button",
+            {
+              style: buttonStyle,
+              onMouseEnter: (e) => e.currentTarget.style.backgroundColor = "#f0f0f0",
+              onMouseLeave: (e) => e.currentTarget.style.backgroundColor = "white",
+              onClick: onSelectViewport,
+              children: "\u{1F4F8} Capture Full Viewport"
+            }
+          ),
+          /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+            "button",
+            {
+              style: buttonStyle,
+              onMouseEnter: (e) => e.currentTarget.style.backgroundColor = "#f0f0f0",
+              onMouseLeave: (e) => e.currentTarget.style.backgroundColor = "white",
+              onClick: onSelectFullPage,
+              children: "\u{1F4C4} Capture Full Page"
+            }
+          ),
+          /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+            "button",
+            {
+              style: buttonStyle,
+              onMouseEnter: (e) => e.currentTarget.style.backgroundColor = "#f0f0f0",
+              onMouseLeave: (e) => e.currentTarget.style.backgroundColor = "white",
+              onClick: onSelectManual,
+              children: "\u270F\uFE0F Manual Selection"
+            }
+          )
+        ] })
+      }
+    );
+  }
   function Root() {
     const [status, setStatus] = useAtom(overlayStateAtom);
     const [floatyAtoms, setFloatyAtoms] = useAtom(FloatyAtoms);
+    const [menuVisible, setMenuVisible] = (0, import_react33.useState)(false);
+    const [menuPosition, setMenuPosition] = (0, import_react33.useState)({ x: 0, y: 0 });
+    const currentMousePosition = (0, import_react33.useRef)({ x: 0, y: 0 });
+    (0, import_react33.useEffect)(() => {
+      const handleMouseMove = (e) => {
+        currentMousePosition.current = { x: e.clientX, y: e.clientY };
+      };
+      document.addEventListener("mousemove", handleMouseMove);
+      return () => document.removeEventListener("mousemove", handleMouseMove);
+    }, []);
+    const captureFullViewport = () => {
+      const innerWidth = window.innerWidth;
+      const innerHeight = window.innerHeight;
+      const area = { xmin: 0, ymin: 0, xmax: innerWidth, ymax: innerHeight };
+      chrome.runtime.sendMessage({
+        type: "takeScreenshotRequest",
+        area
+      });
+      setMenuVisible(false);
+      setStatus("idle");
+    };
+    const captureFullPage = () => {
+      const fullWidth = Math.max(document.documentElement.scrollWidth, window.innerWidth);
+      const fullHeight = Math.max(document.documentElement.scrollHeight, window.innerHeight);
+      const area = { xmin: 0, ymin: 0, xmax: fullWidth, ymax: fullHeight };
+      chrome.runtime.sendMessage({
+        type: "takeScreenshotRequest",
+        area
+      });
+      setMenuVisible(false);
+      setStatus("idle");
+    };
+    const startManualSelection = () => {
+      setMenuVisible(false);
+      setStatus("onSelection");
+    };
     (0, import_react33.useEffect)(() => {
       const handleChromeMessage = (message) => {
         switch (message.type) {
           case "beginSelection":
-            setStatus("onSelection");
+            if (menuVisible) return;
+            let menuX = currentMousePosition.current.x;
+            let menuY = currentMousePosition.current.y;
+            if (menuX === 0 && menuY === 0) {
+              menuX = window.innerWidth / 2 - 100;
+              menuY = window.innerHeight / 2 - 60;
+            }
+            if (menuX + 200 > window.innerWidth) {
+              menuX = window.innerWidth - 200 - 10;
+            }
+            if (menuY + 120 > window.innerHeight) {
+              menuY = window.innerHeight - 120 - 10;
+            }
+            if (menuX < 0) menuX = 10;
+            if (menuY < 0) menuY = 10;
+            setMenuPosition({ x: menuX, y: menuY });
+            setMenuVisible(true);
             break;
           case "takeScreenshotResponse":
             handleScreenshotResponse(message);
@@ -32802,9 +32947,19 @@
       };
       chrome.runtime.onMessage.addListener(handleChromeMessage);
       return () => chrome.runtime.onMessage.removeListener(handleChromeMessage);
-    }, [floatyAtoms, setStatus, setFloatyAtoms]);
+    }, [floatyAtoms, setStatus, setFloatyAtoms, menuVisible, setMenuVisible, setMenuPosition]);
     return /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { style: { fontSize: "16px" }, children: [
-      status !== "idle" && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Selection, {}),
+      menuVisible && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+        CaptureModeMenu,
+        {
+          position: menuPosition,
+          onSelectViewport: captureFullViewport,
+          onSelectFullPage: captureFullPage,
+          onSelectManual: startManualSelection,
+          onClose: () => setMenuVisible(false)
+        }
+      ),
+      status !== "idle" && !menuVisible && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Selection, {}),
       floatyAtoms.map((floatyAtom, index) => /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Floaty, { floaty: floatyAtom }, `floaty-${index}`)),
       /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(LogicLoadConfig, {})
     ] });
