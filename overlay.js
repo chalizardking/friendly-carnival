@@ -32947,7 +32947,7 @@
       };
       chrome.runtime.onMessage.addListener(handleChromeMessage);
       return () => chrome.runtime.onMessage.removeListener(handleChromeMessage);
-    }, [floatyAtoms, setStatus, setFloatyAtoms]);
+    }, [floatyAtoms, setStatus, setFloatyAtoms, menuVisible, setMenuVisible, setMenuPosition]);
     return /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { style: { fontSize: "16px" }, children: [
       status !== "idle" && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Selection, {}),
       floatyAtoms.map((floatyAtom, index) => /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Floaty, { floaty: floatyAtom }, `floaty-${index}`)),
