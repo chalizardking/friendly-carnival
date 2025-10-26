@@ -32768,6 +32768,99 @@
 
   // src/components/root.tsx
   var import_jsx_runtime19 = __toESM(require_jsx_runtime(), 1);
+  function CaptureModeMenu({ position, onSelectViewport, onSelectFullPage, onSelectManual, onClose }) {
+    const menuContainerRef = (0, import_react33.useRef)(null);
+    (0, import_react33.useEffect)(() => {
+      const handleClickOutside = (event) => {
+        if (menuContainerRef.current && !menuContainerRef.current.contains(event.target)) {
+          onClose();
+        }
+      };
+      const handleEscapeKey = (event) => {
+        if (event.key === "Escape") {
+          event.stopPropagation();
+          onClose();
+        }
+      };
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleEscapeKey);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+        document.removeEventListener("keydown", handleEscapeKey);
+      };
+    }, [onClose]);
+    const menuStyle = {
+      position: "fixed",
+      left: `${position.x}px`,
+      top: `${position.y}px`,
+      width: "200px",
+      backgroundColor: "white",
+      border: "2px solid #999",
+      borderRadius: "4px",
+      padding: "8px",
+      boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
+      zIndex: "1000003",
+      display: "flex",
+      flexDirection: "column",
+      gap: "8px"
+    };
+    const buttonStyle = {
+      width: "100%",
+      height: "36px",
+      padding: "8px 12px",
+      border: "1px solid #ccc",
+      borderRadius: "4px",
+      backgroundColor: "white",
+      fontSize: "14px",
+      textAlign: "left",
+      cursor: "pointer",
+      display: "flex",
+      alignItems: "center",
+      gap: "8px"
+    };
+    const buttonHoverStyle = {
+      backgroundColor: "#f0f0f0"
+    };
+    return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+      "div",
+      {
+        ref: menuContainerRef,
+        style: menuStyle,
+        children: /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(import_jsx_runtime19.Fragment, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+            "button",
+            {
+              style: buttonStyle,
+              onMouseEnter: (e) => e.currentTarget.style.backgroundColor = "#f0f0f0",
+              onMouseLeave: (e) => e.currentTarget.style.backgroundColor = "white",
+              onClick: onSelectViewport,
+              children: "\u{1F4F8} Capture Full Viewport"
+            }
+          ),
+          /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+            "button",
+            {
+              style: buttonStyle,
+              onMouseEnter: (e) => e.currentTarget.style.backgroundColor = "#f0f0f0",
+              onMouseLeave: (e) => e.currentTarget.style.backgroundColor = "white",
+              onClick: onSelectFullPage,
+              children: "\u{1F4C4} Capture Full Page"
+            }
+          ),
+          /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+            "button",
+            {
+              style: buttonStyle,
+              onMouseEnter: (e) => e.currentTarget.style.backgroundColor = "#f0f0f0",
+              onMouseLeave: (e) => e.currentTarget.style.backgroundColor = "white",
+              onClick: onSelectManual,
+              children: "\u270F\uFE0F Manual Selection"
+            }
+          )
+        ] })
+      }
+    );
+  }
   function Root() {
     const [status, setStatus] = useAtom(overlayStateAtom);
     const [floatyAtoms, setFloatyAtoms] = useAtom(FloatyAtoms);
